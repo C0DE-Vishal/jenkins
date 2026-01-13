@@ -17,15 +17,19 @@ node {
         sh "docker build -t $containerName:$tag --pull --no-cache ."
         echo "Image build complete"
     }
-    stage('Push to Docker Registry'){
-        withCredentials([usernamePassword(credentialsId: 'dockerHubAccount', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-  sh """
-    echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-    docker tag springbootdocker:latest \$DOCKER_USER/springbootdocker:latest
-    docker push \$DOCKER_USER/springbootdocker:latest
-  """
-        }
-    }        
+   stage('Push to Docker Registry') {
+  steps {
+    withCredentials([usernamePassword(credentialsId: 'dockerHubAccount', 
+      usernameVariable: 'DOCKER_HUB_USER', 
+      passwordVariable: 'DOCKER_HUB_PASS')]) {
+      sh '''
+        echo $DOCKER_HUB_PASS | docker login -u $DOCKER_HUB_USER --password-stdin
+        docker tag springbootdocker:latest $DOCKER_HUB_USER/springbootdocker:latest
+        docker push $DOCKER_HUB_USER/springbootdocker:latest
+      '''
+    }
+}
+}
    /*stage("SonarQube Scan"){
         withSonarQubeEnv(credentialsId: 'SonarQubeToken') {
 			sh "${sonarscanner}/bin/sonar-scanner"
